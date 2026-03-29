@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.FieldConfig
 import org.firstinspires.ftc.teamcode.enums.DrivetrainState
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.interfaces.Subsystem
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -16,6 +17,8 @@ class Drivetrain(private val hardware: RobotHardware) : Subsystem {
     private var state: DrivetrainState = DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC
 
     private val rotationPIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
+    private val forwardPIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
+    private val strafePIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
 
     fun changeState(newState: DrivetrainState) {
         state = newState
@@ -34,7 +37,61 @@ class Drivetrain(private val hardware: RobotHardware) : Subsystem {
         val rotatedStrafe = forward * sinA + strafe * cosA
 
         drive(rotatedForward, rotatedStrafe, rotate)
+    }
 
+    private fun moveToPose(targetPose: Pose2D, currentPose: Pose2D): Boolean {
+        // Get current position
+        val currentX = currentPose.getX(DistanceUnit.MM)
+        val currentY = currentPose.getY(DistanceUnit.MM)
+        val currentHeading = currentPose.getHeading(AngleUnit.RADIANS)
+
+        // Get target position
+        val targetX = targetPose.getX(DistanceUnit.MM)
+        val targetY = targetPose.getY(DistanceUnit.MM)
+        val targetHeading = targetPose.getHeading(AngleUnit.RADIANS)
+
+        // Field-centric error
+        val xError = targetX - currentX
+        val yError = targetY - currentY
+        var headingError = targetHeading - currentHeading
+
+        // Normalize heading error to [-pi, pi]
+        while (headingError > Math.PI) headingError -= 2 * Math.PI
+        while (headingError < -Math.PI) headingError += 2 * Math.PI
+
+        // Rotate field error into robot frame
+        val cos = cos(currentHeading)
+        val sin = sin(currentHeading)
+
+        val forwardError = xError * cos + yError * sin
+        val strafeError = -xError * sin + yError * cos
+
+        // PID outputs
+        val forwardPower = forwardPIDF.calculate(forwardError)
+        val strafePower = strafePIDF.calculate(strafeError)
+        val rotationPower = rotationPIDF.calculate(headingError)
+
+        // Normalize motor powers
+        val maxPower = maxOf(
+            abs(forwardPower),
+            abs(strafePower),
+            abs(rotationPower),
+            1.0
+        )
+
+        drive(
+            forwardPower / maxPower,
+            strafePower / maxPower,
+            rotationPower / maxPower
+        )
+
+        // Completion thresholds
+        val positionThreshold = 1.0 // inches
+        val headingThreshold = Math.toRadians(3.0)
+
+        val distance = Math.hypot(xError, yError)
+
+        return distance < positionThreshold && Math.abs(headingError) < headingThreshold
     }
 
     private fun assistedRotation(
@@ -87,6 +144,18 @@ class Drivetrain(private val hardware: RobotHardware) : Subsystem {
                     goalPos.getX(DistanceUnit.CM) - currentX
                 )
                 assistedRotation(forward, strafe, targetHeading, currentHeading)
+            }
+
+            DrivetrainState.MACRO_MOVE_TO_SHOOT -> {
+                if (moveToPose(FieldConfig.redShootingPose, botpose)) {
+                    changeState(DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC)
+                }
+            }
+
+            DrivetrainState.MACRO_MOVE_TO_INTAKE -> {
+                if (moveToPose(FieldConfig.redIntakingPose, botpose)) {
+                    changeState(DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC)
+                }
             }
         }
     }

@@ -38,6 +38,9 @@ class ManualOpMode : OpMode() {
         val flywheelToggle = robotHardware.gamepad.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)
         val lockTowardsGoal = robotHardware.gamepad.isDown(GamepadKeys.Button.LEFT_BUMPER)
 
+        val touchedJoystick = robotHardware.gamepad.leftX >= 0.1 || robotHardware.gamepad.leftX <= -0.1 || robotHardware.gamepad.leftY >= 0.1 || robotHardware.gamepad.leftY <= -0.1
+        val macroMoveToShoot = robotHardware.gamepad.wasJustPressed(GamepadKeys.Button.X)
+
         intake.setState(
             when {
                 intakeForward -> IntakeState.ON
@@ -64,6 +67,8 @@ class ManualOpMode : OpMode() {
         drivetrain.changeState(
             when {
                 lockTowardsGoal -> DrivetrainState.LOCK_TOWARDS_GOAL
+                macroMoveToShoot -> DrivetrainState.MACRO_MOVE_TO_SHOOT
+                touchedJoystick -> DrivetrainState.DRIVER_CONTROLLED_ROBOT_CENTRIC
                 else -> DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC
             }
         )

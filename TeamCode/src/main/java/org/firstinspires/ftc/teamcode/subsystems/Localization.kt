@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems
 
+import com.bylazar.field.PanelsField
 import com.qualcomm.hardware.limelightvision.LLResult
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
@@ -8,11 +9,59 @@ import org.firstinspires.ftc.teamcode.enums.LocalizationState
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.interfaces.Subsystem
 import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 class Localization(private val hardware: RobotHardware) : Subsystem {
     private var state: LocalizationState = LocalizationState.FUSED
 
     private var pose: Pose2D = Pose2D(DistanceUnit.MM, 0.0, 0.0, AngleUnit.RADIANS, 0.0)
+    val panelsField = PanelsField.field
+
+    init {
+        panelsField.setOffsets(PanelsField.presets.DEFAULT_FTC)
+    }
+
+    fun drawRobot(robotX: Double, robotY: Double, heading: Double) {
+        val size = 18.0
+        val half = size / 2.0
+
+        fun rotate(x: Double, y: Double, angle: Double): Pair<Double, Double> {
+            val cosA = cos(angle)
+            val sinA = sin(angle)
+            val rx = x * cosA - y * sinA
+            val ry = x * sinA + y * cosA
+            return Pair(rx, ry)
+        }
+
+        // Robot square corners (relative to center)
+        val corners = listOf(
+            Pair(-half, -half),
+            Pair(half, -half),
+            Pair(half, half),
+            Pair(-half, half)
+        )
+
+        // Draw square
+        for (i in corners.indices) {
+            val p1 = rotate(corners[i].first, corners[i].second, heading)
+            val p2 = rotate(corners[(i + 1) % corners.size].first, corners[(i + 1) % corners.size].second, heading)
+
+            panelsField.moveCursor(robotX + p1.first, robotY + p1.second)
+            panelsField.line(
+                x2 = robotX + p2.first,
+                y2 = robotY + p2.second
+            )
+        }
+
+        // Draw forward arrow
+        val arrowLength = 12.0
+        val x2 = robotX + arrowLength * cos(heading)
+        val y2 = robotY + arrowLength * sin(heading)
+
+        panelsField.moveCursor(robotX, robotY)
+        panelsField.line(x2 = x2, y2 = y2)
+    }
 
     // Kalman state: [x, y, heading] estimates
     private var kX = 0.0
@@ -61,6 +110,9 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
                 kalmanFused(odometryPose, visionPose)
             }
         }
+
+        drawRobot(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.RADIANS))
+        panelsField.update()
     }
 
     private fun kalmanFused(odometry: Pose2D, vision: Pose2D?) {
