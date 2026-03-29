@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.opmodes
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.teamcode.enums.BufferState
+import org.firstinspires.ftc.teamcode.enums.DrivetrainState
 import org.firstinspires.ftc.teamcode.enums.IntakeState
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.subsystems.Buffer
@@ -36,6 +36,7 @@ class ManualOpMode : OpMode() {
         val shoot = robotHardware.gamepad.wasJustPressed(GamepadKeys.Trigger.RIGHT_TRIGGER)
         val shootRelease = robotHardware.gamepad.wasJustReleased(GamepadKeys.Trigger.RIGHT_TRIGGER)
         val flywheelToggle = robotHardware.gamepad.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)
+        val lockTowardsGoal = robotHardware.gamepad.isDown(GamepadKeys.Button.LEFT_BUMPER)
 
         intake.setState(
             when {
@@ -59,6 +60,13 @@ class ManualOpMode : OpMode() {
         localization.periodic()
 
         val botPose = localization.getPose()
+
+        drivetrain.changeState(
+            when {
+                lockTowardsGoal -> DrivetrainState.LOCK_TOWARDS_GOAL
+                else -> DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC
+            }
+        ))
 
         drivetrain.periodic(botPose)
         flywheel.periodic(botPose)

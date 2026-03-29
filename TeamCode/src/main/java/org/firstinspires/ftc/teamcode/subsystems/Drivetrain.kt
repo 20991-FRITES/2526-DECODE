@@ -17,6 +17,10 @@ class Drivetrain(private val hardware: RobotHardware) : Subsystem {
 
     private val rotationPIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
 
+    fun changeState(newState: DrivetrainState) {
+        state = newState
+    }
+
     private fun fieldCentricDrive(
         forward: Double,
         strafe: Double,
