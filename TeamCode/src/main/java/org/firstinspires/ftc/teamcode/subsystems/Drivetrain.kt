@@ -5,7 +5,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.teamcode.FieldConfig
+import org.firstinspires.ftc.teamcode.FieldConfig.mirror
 import org.firstinspires.ftc.teamcode.enums.DrivetrainState
+import org.firstinspires.ftc.teamcode.enums.Team
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.interfaces.Subsystem
 import kotlin.math.abs
@@ -13,7 +15,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Drivetrain(private val hardware: RobotHardware) : Subsystem {
+class Drivetrain(private val hardware: RobotHardware, private val team: Team) : Subsystem {
     private var state: DrivetrainState = DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC
 
     private val rotationPIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
@@ -138,7 +140,7 @@ class Drivetrain(private val hardware: RobotHardware) : Subsystem {
                 val currentHeading: Double = botpose.getHeading(AngleUnit.RADIANS)
                 val currentX = botpose.getX(DistanceUnit.CM)
                 val currentY = botpose.getY(DistanceUnit.CM)
-                val goalPos = FieldConfig.redGoalPose;
+                val goalPos = mirror(FieldConfig.redGoalPose, team);
                 val targetHeading = atan2(
                     goalPos.getY(DistanceUnit.CM) - currentY,
                     goalPos.getX(DistanceUnit.CM) - currentX
@@ -147,13 +149,13 @@ class Drivetrain(private val hardware: RobotHardware) : Subsystem {
             }
 
             DrivetrainState.MACRO_MOVE_TO_SHOOT -> {
-                if (moveToPose(FieldConfig.redShootingPose, botpose)) {
+                if (moveToPose(mirror(FieldConfig.redShootingPose, team), botpose)) {
                     changeState(DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC)
                 }
             }
 
             DrivetrainState.MACRO_MOVE_TO_INTAKE -> {
-                if (moveToPose(FieldConfig.redIntakingPose, botpose)) {
+                if (moveToPose(mirror(FieldConfig.redIntakingPose, team), botpose)) {
                     changeState(DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC)
                 }
             }

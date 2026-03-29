@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.hardware.limelightvision.Limelight3A
+import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.hardware.motors.CRServo
@@ -26,6 +27,11 @@ class RobotHardware {
 
     lateinit var limelight: Limelight3A
     lateinit var pinpoint: GoBildaPinpointDriver
+
+    lateinit var distanceLeft: DistanceSensor
+    lateinit var distanceRight: DistanceSensor
+    lateinit var distanceIntakeLeft: DistanceSensor
+    lateinit var distanceIntakeRight: DistanceSensor
 
     fun init(hardwareMap: HardwareMap, gamepad1: Gamepad) {
         frontLeft = MotorEx(hardwareMap, "front_left")
@@ -58,5 +64,10 @@ class RobotHardware {
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD)
 
         pinpoint.resetPosAndIMU();
+
+        distanceLeft = hardwareMap.get(DistanceSensor::class.java, "distance_left")
+        distanceRight = hardwareMap.get(DistanceSensor::class.java, "distance_right")
+        distanceIntakeLeft = hardwareMap.get(DistanceSensor::class.java, "distance_intake_left")
+        distanceIntakeRight = hardwareMap.get(DistanceSensor::class.java, "distance_intake_right")
     }
 }

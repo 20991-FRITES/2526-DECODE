@@ -5,6 +5,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys
 import org.firstinspires.ftc.teamcode.enums.BufferState
 import org.firstinspires.ftc.teamcode.enums.DrivetrainState
 import org.firstinspires.ftc.teamcode.enums.IntakeState
+import org.firstinspires.ftc.teamcode.enums.Team
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.subsystems.Buffer
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain
@@ -12,19 +13,20 @@ import org.firstinspires.ftc.teamcode.subsystems.Flywheel
 import org.firstinspires.ftc.teamcode.subsystems.Intake
 import org.firstinspires.ftc.teamcode.subsystems.Localization
 
-class ManualOpMode : OpMode() {
+open class ManualOpMode : OpMode() {
     var robotHardware: RobotHardware = RobotHardware()
     lateinit var drivetrain: Drivetrain
     lateinit var localization: Localization
     lateinit var intake: Intake
     lateinit var flywheel: Flywheel
     lateinit var buffer: Buffer
+    lateinit var team: Team
 
     override fun init() {
         robotHardware.init(hardwareMap, gamepad1)
 
         localization = Localization(robotHardware)
-        drivetrain = Drivetrain(robotHardware)
+        drivetrain = Drivetrain(robotHardware, team)
         intake = Intake(robotHardware)
         flywheel = Flywheel(robotHardware)
         buffer = Buffer(robotHardware)
