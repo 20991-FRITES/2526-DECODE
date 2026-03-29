@@ -22,7 +22,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
         }
     }
 
-    override fun periodic() {
+    override fun periodic(flywheel: Flywheel) {
         when (state) {
             BufferState.OFF -> {
                 hardware.bufferLeft.set(0.0)
@@ -51,13 +51,16 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
                 hardware.bufferLeft.set(0.0)
                 hardware.bufferRight.set(0.0)
 
-                // TODO: Check flywheel velocity to ensure it's back up to speed before allowing the next shot
+                if (!flywheel.isAtTargetVelocity()) return
+
                 changeState(BufferState.LEFT_SHOOT)
             }
 
             BufferState.WAITING_RIGHT -> {
                 hardware.bufferLeft.set(0.0)
                 hardware.bufferRight.set(0.0)
+
+                if (!flywheel.isAtTargetVelocity()) return
 
                 changeState(BufferState.RIGHT_SHOOT)
             }
