@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.interfaces.Subsystem
 
 class Buffer(private val hardware: RobotHardware) : Subsystem {
-    public var state: BufferState = BufferState.OFF
+    var state: BufferState = BufferState.OFF
 
     private var minShotTime: Double =
         500.0 // ms - Minimum time that the buffer must be on before moving to the next shot.
@@ -14,7 +14,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
         0 // Timestamp of the last time the buffer was turned on for shooting.
 
 
-    fun setState(newState: BufferState) {
+    fun changeState(newState: BufferState) {
         if (newState == BufferState.WAITING_LEFT || newState == BufferState.WAITING_RIGHT) {
             lastShotTime = System.currentTimeMillis()
 
@@ -52,14 +52,14 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
                 hardware.bufferRight.set(0.0)
 
                 // TODO: Check flywheel velocity to ensure it's back up to speed before allowing the next shot
-                setState(BufferState.LEFT_SHOOT)
+                changeState(BufferState.LEFT_SHOOT)
             }
 
             BufferState.WAITING_RIGHT -> {
                 hardware.bufferLeft.set(0.0)
                 hardware.bufferRight.set(0.0)
 
-                setState(BufferState.RIGHT_SHOOT)
+                changeState(BufferState.RIGHT_SHOOT)
             }
 
             BufferState.REVERSE -> {

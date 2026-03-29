@@ -43,7 +43,7 @@ class ManualOpMode : OpMode() {
             }
         )
 
-        buffer.setState(
+        buffer.changeState(
             when {
                 shoot -> BufferState.WAITING_LEFT
                 intakeReverse -> BufferState.REVERSE
