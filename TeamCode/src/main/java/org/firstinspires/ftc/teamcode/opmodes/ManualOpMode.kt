@@ -66,7 +66,7 @@ class ManualOpMode : OpMode() {
                 lockTowardsGoal -> DrivetrainState.LOCK_TOWARDS_GOAL
                 else -> DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC
             }
-        ))
+        )
 
         drivetrain.periodic(botPose)
         flywheel.periodic(botPose)
