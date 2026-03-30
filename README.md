@@ -1,4 +1,6 @@
-![FIRST Tech Challenge - Decode](doc/media/decode_logo_ftc_fullcolor.png)
+<p align="center">
+  <img src="doc/media/decode_logo_ftc_fullcolor.png" width="300">
+</p>
 
 ## NOTICE
 
