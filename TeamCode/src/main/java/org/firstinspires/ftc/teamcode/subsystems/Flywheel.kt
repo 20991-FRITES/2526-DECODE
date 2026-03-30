@@ -13,13 +13,13 @@ import kotlin.math.sqrt
 class Flywheel(private val hardware: RobotHardware) : Subsystem {
     private var state: FlywheelState = FlywheelState.ON
 
-    private val pidfController: PIDFController = PIDFController(0.1, 0.01, 0.05, 0.0);
+    private val pidfController: PIDFController = PIDFController(0.02, 0.0, 0.0, -0.5);
 
     private var targetVelocity: Double = 1300.0 // ticks/second
 
     fun distanceToVelocity(distance: Double, distanceUnit: DistanceUnit): Double {
         val d = distanceUnit.toCm(distance)
-        return d * 10.0 // TODO: Calibrate this
+        return (185 * d * d) / 86658 + (26035 * d) / 86658 + (1209050 / 1111).toDouble() // TODO: Calibrate this
     }
 
     fun toggleState() {

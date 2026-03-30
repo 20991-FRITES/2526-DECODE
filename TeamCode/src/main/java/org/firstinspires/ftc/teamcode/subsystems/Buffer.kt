@@ -13,6 +13,8 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
     private var lastShotTime: Long =
         0 // Timestamp of the last time the buffer was turned on for shooting.
 
+    var shotCount: Int = 0 // Number of shots fired in the current shooting sequence.
+
 
     fun changeState(newState: BufferState) {
         if (newState == BufferState.WAITING_LEFT || newState == BufferState.WAITING_RIGHT) {
@@ -27,6 +29,8 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
             BufferState.OFF -> {
                 hardware.bufferLeft.set(0.0)
                 hardware.bufferRight.set(0.0)
+
+                shotCount = 0
             }
 
             BufferState.LEFT_SHOOT -> {
@@ -34,6 +38,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
                 hardware.bufferRight.set(0.0)
 
                 if (System.currentTimeMillis() - lastShotTime >= minShotTime) {
+                    shotCount++
                     state = BufferState.WAITING_RIGHT
                 }
             }
@@ -43,6 +48,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
                 hardware.bufferRight.set(1.0)
 
                 if (System.currentTimeMillis() - lastShotTime >= minShotTime) {
+                    shotCount++
                     state = BufferState.WAITING_LEFT
                 }
             }
@@ -68,6 +74,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
             BufferState.REVERSE -> {
                 hardware.bufferLeft.set(-1.0)
                 hardware.bufferRight.set(-1.0)
+                shotCount = 0
             }
         }
     }

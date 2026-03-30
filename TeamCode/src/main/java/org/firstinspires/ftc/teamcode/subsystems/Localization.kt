@@ -45,7 +45,11 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
         // Draw square
         for (i in corners.indices) {
             val p1 = rotate(corners[i].first, corners[i].second, heading)
-            val p2 = rotate(corners[(i + 1) % corners.size].first, corners[(i + 1) % corners.size].second, heading)
+            val p2 = rotate(
+                corners[(i + 1) % corners.size].first,
+                corners[(i + 1) % corners.size].second,
+                heading
+            )
 
             panelsField.moveCursor(robotX + p1.first, robotY + p1.second)
             panelsField.line(
@@ -76,12 +80,12 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
     // Process noise Q: how much uncertainty odometry adds each tick.
     // Increase if the robot drifts noticeably between vision updates.
     private val Q_XY = 100.0      // mm²
-    private val Q_H  = 0.001      // rad²
+    private val Q_H = 0.001      // rad²
 
     // Measurement noise R: how noisy vision is.
     // Increase if vision jitters; decrease if it's very stable.
     private val R_XY = 500.0      // mm²
-    private val R_H  = 0.01       // rad²
+    private val R_H = 0.01       // rad²
 
     override fun periodic() {
         hardware.pinpoint.update()
@@ -111,15 +115,19 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
             }
         }
 
-        drawRobot(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.RADIANS))
+        drawRobot(
+            pose.getX(DistanceUnit.INCH),
+            pose.getY(DistanceUnit.INCH),
+            pose.getHeading(AngleUnit.RADIANS)
+        )
         panelsField.update()
     }
 
     private fun kalmanFused(odometry: Pose2D, vision: Pose2D?) {
         // --- Predict step ---
         // Trust the odometry as our motion model (it's the most continuous source).
-        kX       = odometry.getX(DistanceUnit.MM)
-        kY       = odometry.getY(DistanceUnit.MM)
+        kX = odometry.getX(DistanceUnit.MM)
+        kY = odometry.getY(DistanceUnit.MM)
         kHeading = odometry.getHeading(AngleUnit.RADIANS)
 
         // Grow covariance with process noise each tick.
@@ -135,14 +143,14 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
             val kGainH = pH / (pH + R_H)
 
             // Innovation: difference between vision measurement and prediction.
-            val innovX = vision.getX(DistanceUnit.MM)       - kX
-            val innovY = vision.getY(DistanceUnit.MM)       - kY
+            val innovX = vision.getX(DistanceUnit.MM) - kX
+            val innovY = vision.getY(DistanceUnit.MM) - kY
             val innovH = wrapAngle(vision.getHeading(AngleUnit.RADIANS) - kHeading)
 
             // Fuse: pull the estimate toward vision proportional to the gain.
-            kX       += kGainX * innovX
-            kY       += kGainY * innovY
-            kHeading  = wrapAngle(kHeading + kGainH * innovH)
+            kX += kGainX * innovX
+            kY += kGainY * innovY
+            kHeading = wrapAngle(kHeading + kGainH * innovH)
 
             // Shrink covariance now that we have a measurement.
             pX *= (1.0 - kGainX)
@@ -156,7 +164,7 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
     /** Wrap an angle difference into [-π, π] to avoid discontinuities. */
     private fun wrapAngle(angle: Double): Double {
         var a = angle % (2 * PI)
-        if (a > PI)  a -= 2 * PI
+        if (a > PI) a -= 2 * PI
         if (a < -PI) a += 2 * PI
         return a
     }

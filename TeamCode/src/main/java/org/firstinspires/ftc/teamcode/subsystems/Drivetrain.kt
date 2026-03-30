@@ -4,8 +4,8 @@ import com.seattlesolvers.solverslib.controller.PIDFController
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
-import org.firstinspires.ftc.teamcode.FieldConfig
-import org.firstinspires.ftc.teamcode.FieldConfig.mirror
+import org.firstinspires.ftc.teamcode.config.FieldConfig
+import org.firstinspires.ftc.teamcode.config.FieldConfig.mirror
 import org.firstinspires.ftc.teamcode.enums.DrivetrainState
 import org.firstinspires.ftc.teamcode.enums.Team
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
@@ -18,9 +18,9 @@ import kotlin.math.sin
 class Drivetrain(private val hardware: RobotHardware, private val team: Team) : Subsystem {
     private var state: DrivetrainState = DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC
 
-    private val rotationPIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
-    private val forwardPIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
-    private val strafePIDF = PIDFController(0.1, 0.01, 0.05, 0.0)
+    private val rotationPIDF = PIDFController(0.85, 0.0, 0.001, 0.025)
+    private val forwardPIDF = PIDFController(0.05, 0.0, 0.00001, 0.025)
+    private val strafePIDF = PIDFController(0.075, 0.0, 0.001, 0.025)
 
     fun changeState(newState: DrivetrainState) {
         state = newState
