@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.subsystems
 
 import com.bylazar.field.PanelsField
+import com.pedropathing.ftc.FTCCoordinates
+import com.pedropathing.ftc.InvertedFTCCoordinates
+import com.pedropathing.ftc.PoseConverter
 import com.qualcomm.hardware.limelightvision.LLResult
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
+import org.firstinspires.ftc.teamcode.config.AutoPaths
 import org.firstinspires.ftc.teamcode.enums.LocalizationState
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.interfaces.Subsystem
@@ -15,7 +19,10 @@ import kotlin.math.sin
 class Localization(private val hardware: RobotHardware) : Subsystem {
     private var state: LocalizationState = LocalizationState.FUSED
 
-    private var pose: Pose2D = Pose2D(DistanceUnit.MM, 0.0, 0.0, AngleUnit.RADIANS, 0.0)
+    private var pose: Pose2D = PoseConverter.poseToPose2D(
+        AutoPaths.parkPose,
+        InvertedFTCCoordinates.INSTANCE
+    ) // Teleop start pose
     val panelsField = PanelsField.field
 
     init {

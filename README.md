@@ -1,3 +1,5 @@
+![FIRST Tech Challenge - Decode](doc/media/decode_logo_ftc_fullcolor.png)
+
 ## NOTICE
 
 This repository contains the public FTC SDK for the DECODE (2025-2026) competition season.
