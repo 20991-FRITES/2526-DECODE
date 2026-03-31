@@ -8,6 +8,7 @@ import com.qualcomm.hardware.limelightvision.LLResult
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
+import org.firstinspires.ftc.teamcode.BotContext
 import org.firstinspires.ftc.teamcode.config.AutoPaths
 import org.firstinspires.ftc.teamcode.enums.LocalizationState
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
@@ -94,7 +95,7 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
     private val R_XY = 500.0      // mm²
     private val R_H = 0.01       // rad²
 
-    override fun periodic() {
+    override fun periodic(context: BotContext) {
         hardware.pinpoint.update()
 
         val odometryPose: Pose2D = hardware.pinpoint.position
@@ -121,6 +122,8 @@ class Localization(private val hardware: RobotHardware) : Subsystem {
                 kalmanFused(odometryPose, visionPose)
             }
         }
+
+        context.botPose = pose
 
         drawRobot(
             pose.getX(DistanceUnit.INCH),

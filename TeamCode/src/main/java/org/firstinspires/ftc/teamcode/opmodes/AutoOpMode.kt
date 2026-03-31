@@ -4,6 +4,7 @@ import com.pedropathing.follower.Follower
 import com.pedropathing.ftc.InvertedFTCCoordinates
 import com.pedropathing.ftc.PoseConverter
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import org.firstinspires.ftc.teamcode.BotContext
 import org.firstinspires.ftc.teamcode.config.AutoConfig.END_TIME_BUFFER
 import org.firstinspires.ftc.teamcode.config.AutoConfig.INTAKE_FROM_RAMP_DURATION
 import org.firstinspires.ftc.teamcode.config.AutoPaths
@@ -13,13 +14,14 @@ import org.firstinspires.ftc.teamcode.enums.BufferState
 import org.firstinspires.ftc.teamcode.enums.IntakeState
 import org.firstinspires.ftc.teamcode.enums.Team
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
+import org.firstinspires.ftc.teamcode.interfaces.Subsystem
 import org.firstinspires.ftc.teamcode.pedropathing.Constants
 import org.firstinspires.ftc.teamcode.subsystems.Buffer
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel
 import org.firstinspires.ftc.teamcode.subsystems.Intake
 
 open class AutoOpMode : OpMode() {
-    lateinit var follower: Follower;
+    lateinit var follower: Follower
     lateinit var team: Team
 
     var state = AutoState.MOVE_TO_SHOOT
@@ -30,10 +32,18 @@ open class AutoOpMode : OpMode() {
     lateinit var flywheel: Flywheel
     lateinit var buffer: Buffer
     var robotHardware: RobotHardware = RobotHardware()
+
+    var botContext: BotContext = BotContext(
+        team = team,
+    )
+
+    lateinit var subsystems: List<Subsystem>
+
     var nbShots: Int = 0 // Number of shooting cycles
     var intakeStartTime = 0L // Timestamp when the intake was turned on
 
-    var auto_start_time = 0L // Timestamp when the autonomous period starts
+    var autoStartTime = 0L // Timestamp when the autonomous period starts
+    private var parkPathStarted = false
 
     override fun init() {
         robotHardware.init(hardwareMap, gamepad1)
@@ -47,10 +57,16 @@ open class AutoOpMode : OpMode() {
         follower.setStartingPose(
             mirrorPedro(AutoPaths.startPose, team),
         )
+
+        subsystems = listOf(
+            intake,
+            flywheel,
+            buffer
+        )
     }
 
     override fun start() {
-        auto_start_time = System.currentTimeMillis()
+        autoStartTime = System.currentTimeMillis()
     }
 
     override fun loop() {
@@ -58,17 +74,16 @@ open class AutoOpMode : OpMode() {
 
         intake.setState(IntakeState.ON)
 
-        flywheel.periodic(
-            PoseConverter.poseToPose2D(
-                follower.pose,
-                InvertedFTCCoordinates.INSTANCE
-            )
-        )
-        intake.periodic()
-        buffer.periodic()
+        botContext.botPose = PoseConverter.poseToPose2D(follower.pose, InvertedFTCCoordinates.INSTANCE)
 
-        if (System.currentTimeMillis() - auto_start_time >= 30_000 - END_TIME_BUFFER) {
-            // If there's END_TIME_BUFFER or less left in the autonomous period, stop all actions and park.
+        for (subsystem in subsystems) {
+            subsystem.periodic(botContext)
+        }
+
+        if (state != AutoState.DONE && System.currentTimeMillis() - autoStartTime >= 30_000 - END_TIME_BUFFER) {
+            // If there's END_TIME_BUFFER or less left in autonomous, preemptively stop mechanisms and park.
+            intake.setState(IntakeState.OFF)
+            buffer.changeState(BufferState.OFF)
             state = AutoState.PARK
         }
         autonomousPathUpdate()
@@ -96,6 +111,7 @@ open class AutoOpMode : OpMode() {
             AutoState.SHOOTING -> {
                 if (buffer.shotCount >= 3) {
                     nbShots++
+                    buffer.changeState(BufferState.OFF)
                     if (nbShots == 1) state = AutoState.MOVE_TO_INTAKE_FROM_MIDDLE_ROW
                     else if (nbShots == 2 || nbShots == 3) state =
                         AutoState.MOVE_TO_INTAKE_FROM_RAMP
@@ -171,13 +187,17 @@ open class AutoOpMode : OpMode() {
             }
 
             AutoState.PARK -> {
-                if (!follower.isBusy) {
+                if (!parkPathStarted) {
                     val path = AutoPaths.buildMoveToParkPath(lastPathEndPose, follower)
 
                     follower.followPath(path)
 
                     lastPathEndPose = path.endPose()
 
+                    parkPathStarted = true
+                }
+
+                if (!follower.isBusy) {
                     state = AutoState.DONE
                 }
             }

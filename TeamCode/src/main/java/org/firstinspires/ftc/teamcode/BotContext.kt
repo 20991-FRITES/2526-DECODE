@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.interfaces
+package org.firstinspires.ftc.teamcode
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
-import org.firstinspires.ftc.teamcode.BotContext
 import org.firstinspires.ftc.teamcode.enums.Team
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel
 
-interface Subsystem {
-    fun periodic(context: BotContext) {}
-}
+data class BotContext(
+    var botPose: Pose2D? = null,
+    val team: Team,
+    var flywheel: Flywheel? = null,
+)

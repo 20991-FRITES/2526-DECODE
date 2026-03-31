@@ -3,10 +3,15 @@ package org.firstinspires.ftc.teamcode.subsystems
 import com.seattlesolvers.solverslib.controller.PIDFController
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
+import org.firstinspires.ftc.teamcode.BotContext
+import org.firstinspires.ftc.teamcode.config.FieldConfig
+import org.firstinspires.ftc.teamcode.config.FieldConfig.mirror
 import org.firstinspires.ftc.teamcode.enums.FlywheelState
+import org.firstinspires.ftc.teamcode.enums.Team
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.interfaces.Subsystem
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -29,13 +34,13 @@ class Flywheel(private val hardware: RobotHardware) : Subsystem {
         }
     }
 
-    override fun periodic(botpose: Pose2D) {
+    override fun periodic(context: BotContext) {
         when (state) {
             FlywheelState.ON -> {
-                val distanceToTargetCM = sqrt(
-                    (botpose.getX(DistanceUnit.CM) - 100.0).pow(2) + (botpose.getY(
-                        DistanceUnit.CM
-                    ) - 100.0).pow(2)
+                val target = mirror(FieldConfig.redGoalPose, context.team)
+                val distanceToTargetCM = hypot(
+                    x = target.getX(DistanceUnit.CM) - context.botPose!!.getX(DistanceUnit.CM),
+                    y = target.getY(DistanceUnit.CM) - context.botPose!!.getY(DistanceUnit.CM)
                 )
 
                 targetVelocity = distanceToVelocity(distanceToTargetCM, DistanceUnit.CM)
@@ -53,6 +58,8 @@ class Flywheel(private val hardware: RobotHardware) : Subsystem {
                 hardware.flywheelRight.set(0.0)
             }
         }
+
+        context.flywheel = this
     }
 
     fun isAtTargetVelocity(): Boolean {

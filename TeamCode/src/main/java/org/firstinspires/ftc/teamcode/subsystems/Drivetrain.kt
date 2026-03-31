@@ -4,6 +4,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
+import org.firstinspires.ftc.teamcode.BotContext
 import org.firstinspires.ftc.teamcode.config.FieldConfig
 import org.firstinspires.ftc.teamcode.config.FieldConfig.mirror
 import org.firstinspires.ftc.teamcode.enums.DrivetrainState
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.interfaces.Subsystem
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 
 class Drivetrain(private val hardware: RobotHardware, private val team: Team) : Subsystem {
@@ -88,12 +90,12 @@ class Drivetrain(private val hardware: RobotHardware, private val team: Team) : 
         )
 
         // Completion thresholds
-        val positionThreshold = 1.0 // inches
+        val positionThreshold = DistanceUnit.MM.fromUnit(DistanceUnit.INCH, 1.0)
         val headingThreshold = Math.toRadians(3.0)
 
-        val distance = Math.hypot(xError, yError)
+        val distance = hypot(xError, yError)
 
-        return distance < positionThreshold && Math.abs(headingError) < headingThreshold
+        return distance < positionThreshold && abs(headingError) < headingThreshold
     }
 
     private fun assistedRotation(
@@ -113,16 +115,16 @@ class Drivetrain(private val hardware: RobotHardware, private val team: Team) : 
         hardware.backRight.set(forward + strafe - rotate)
     }
 
-    override fun periodic(botpose: Pose2D) {
+    override fun periodic(context: BotContext) {
         when (state) {
-            DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC -> {
+            DrivetrainState.DRIVER_CONTROLLED_ROBOT_CENTRIC -> {
                 val forward = -hardware.gamepad.leftY
                 val strafe = hardware.gamepad.leftX
                 val rotate = hardware.gamepad.rightX
                 drive(forward, strafe, rotate)
             }
 
-            DrivetrainState.DRIVER_CONTROLLED_ROBOT_CENTRIC -> {
+            DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC -> {
                 val forward = -hardware.gamepad.leftY
                 val strafe = hardware.gamepad.leftX
                 val rotate = hardware.gamepad.rightX
@@ -130,16 +132,16 @@ class Drivetrain(private val hardware: RobotHardware, private val team: Team) : 
                     forward,
                     strafe,
                     rotate,
-                    botpose.getHeading(AngleUnit.RADIANS)
+                    context.botPose!!.getHeading(AngleUnit.RADIANS)
                 )
             }
 
             DrivetrainState.LOCK_TOWARDS_GOAL -> {
                 val forward = -hardware.gamepad.leftY
                 val strafe = hardware.gamepad.leftX
-                val currentHeading: Double = botpose.getHeading(AngleUnit.RADIANS)
-                val currentX = botpose.getX(DistanceUnit.CM)
-                val currentY = botpose.getY(DistanceUnit.CM)
+                val currentHeading: Double = context.botPose!!.getHeading(AngleUnit.RADIANS)
+                val currentX = context.botPose!!.getX(DistanceUnit.CM)
+                val currentY = context.botPose!!.getY(DistanceUnit.CM)
                 val goalPos = mirror(FieldConfig.redGoalPose, team);
                 val targetHeading = atan2(
                     goalPos.getY(DistanceUnit.CM) - currentY,
@@ -149,13 +151,13 @@ class Drivetrain(private val hardware: RobotHardware, private val team: Team) : 
             }
 
             DrivetrainState.MACRO_MOVE_TO_SHOOT -> {
-                if (moveToPose(mirror(FieldConfig.redShootingPose, team), botpose)) {
+                if (moveToPose(mirror(FieldConfig.redShootingPose, team), context.botPose!!)) {
                     changeState(DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC)
                 }
             }
 
             DrivetrainState.MACRO_MOVE_TO_INTAKE -> {
-                if (moveToPose(mirror(FieldConfig.redIntakingPose, team), botpose)) {
+                if (moveToPose(mirror(FieldConfig.redIntakingPose, team), context.botPose!!)) {
                     changeState(DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC)
                 }
             }

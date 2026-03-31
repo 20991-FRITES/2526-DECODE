@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems
 
+import org.firstinspires.ftc.teamcode.BotContext
 import org.firstinspires.ftc.teamcode.enums.BufferState
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware
 import org.firstinspires.ftc.teamcode.interfaces.Subsystem
@@ -20,11 +21,11 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
         if (newState == BufferState.WAITING_LEFT || newState == BufferState.WAITING_RIGHT) {
             lastShotTime = System.currentTimeMillis()
 
-            state = newState
         }
+        state = newState
     }
 
-    override fun periodic(flywheel: Flywheel) {
+    override fun periodic(context: BotContext) {
         when (state) {
             BufferState.OFF -> {
                 hardware.bufferLeft.set(0.0)
@@ -39,7 +40,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
 
                 if (System.currentTimeMillis() - lastShotTime >= minShotTime) {
                     shotCount++
-                    state = BufferState.WAITING_RIGHT
+                    changeState(BufferState.WAITING_RIGHT)
                 }
             }
 
@@ -49,7 +50,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
 
                 if (System.currentTimeMillis() - lastShotTime >= minShotTime) {
                     shotCount++
-                    state = BufferState.WAITING_LEFT
+                    changeState(BufferState.WAITING_LEFT)
                 }
             }
 
@@ -57,7 +58,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
                 hardware.bufferLeft.set(0.0)
                 hardware.bufferRight.set(0.0)
 
-                if (!flywheel.isAtTargetVelocity()) return
+                if (!context.flywheel!!.isAtTargetVelocity()) return
 
                 changeState(BufferState.LEFT_SHOOT)
             }
@@ -66,7 +67,7 @@ class Buffer(private val hardware: RobotHardware) : Subsystem {
                 hardware.bufferLeft.set(0.0)
                 hardware.bufferRight.set(0.0)
 
-                if (!flywheel.isAtTargetVelocity()) return
+                if (!context.flywheel!!.isAtTargetVelocity()) return
 
                 changeState(BufferState.RIGHT_SHOOT)
             }
