@@ -118,16 +118,16 @@ class Drivetrain(private val hardware: RobotHardware, private val team: Team) : 
     override fun periodic(context: BotContext) {
         when (state) {
             DrivetrainState.DRIVER_CONTROLLED_ROBOT_CENTRIC -> {
-                val forward = -hardware.gamepad.leftY
-                val strafe = hardware.gamepad.leftX
-                val rotate = hardware.gamepad.rightX
+                val forward = (-context.gamepad!!.left_stick_y).toDouble()
+                val strafe = context.gamepad!!.left_stick_y.toDouble()
+                val rotate = context.gamepad!!.right_stick_x.toDouble()
                 drive(forward, strafe, rotate)
             }
 
             DrivetrainState.DRIVER_CONTROLLED_FIELD_CENTRIC -> {
-                val forward = -hardware.gamepad.leftY
-                val strafe = hardware.gamepad.leftX
-                val rotate = hardware.gamepad.rightX
+                val forward = (-context.gamepad!!.left_stick_y).toDouble()
+                val strafe = context.gamepad!!.left_stick_x.toDouble()
+                val rotate = context.gamepad!!.right_stick_x.toDouble()
                 fieldCentricDrive(
                     forward,
                     strafe,
@@ -137,8 +137,8 @@ class Drivetrain(private val hardware: RobotHardware, private val team: Team) : 
             }
 
             DrivetrainState.LOCK_TOWARDS_GOAL -> {
-                val forward = -hardware.gamepad.leftY
-                val strafe = hardware.gamepad.leftX
+                val forward = -(context.gamepad!!.left_stick_y).toDouble()
+                val strafe = context.gamepad!!.left_stick_x.toDouble()
                 val currentHeading: Double = context.botPose!!.getHeading(AngleUnit.RADIANS)
                 val currentX = context.botPose!!.getX(DistanceUnit.CM)
                 val currentY = context.botPose!!.getY(DistanceUnit.CM)

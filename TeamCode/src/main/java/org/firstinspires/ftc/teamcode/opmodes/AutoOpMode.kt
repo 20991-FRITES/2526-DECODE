@@ -35,6 +35,7 @@ open class AutoOpMode : OpMode() {
 
     var botContext: BotContext = BotContext(
         team = team,
+        gamepad = gamepad1,
     )
 
     lateinit var subsystems: List<Subsystem>

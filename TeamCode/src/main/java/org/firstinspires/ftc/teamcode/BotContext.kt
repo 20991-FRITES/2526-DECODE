@@ -8,4 +8,5 @@ data class BotContext(
     var botPose: Pose2D? = null,
     val team: Team,
     var flywheel: Flywheel? = null,
+    var gamepad: com.qualcomm.robotcore.hardware.Gamepad?
 )

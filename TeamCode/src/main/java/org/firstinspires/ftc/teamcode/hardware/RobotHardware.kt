@@ -24,8 +24,6 @@ class RobotHardware {
     lateinit var bufferLeft: CRServo
     lateinit var bufferRight: CRServo
 
-    lateinit var gamepad: GamepadEx
-
     lateinit var limelight: Limelight3A
     lateinit var pinpoint: GoBildaPinpointDriver
 
@@ -54,8 +52,6 @@ class RobotHardware {
 
         bufferLeft = CRServo(hardwareMap, HardwareConfig.CANNON_BUFFER_LEFT)
         bufferRight = CRServo(hardwareMap, HardwareConfig.CANNON_BUFFER_RIGHT)
-
-        gamepad = GamepadEx(gamepad1)
 
         limelight = hardwareMap.get(Limelight3A::class.java, HardwareConfig.LIMELIGHT_CAMERA_ID)
         pinpoint =

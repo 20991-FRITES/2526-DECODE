@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys
 import org.firstinspires.ftc.teamcode.BotContext
 import org.firstinspires.ftc.teamcode.enums.BufferState
 import org.firstinspires.ftc.teamcode.enums.DrivetrainState
@@ -44,6 +43,7 @@ open class ManualOpMode : OpMode() {
 
         botContext = BotContext(
             team = team,
+            gamepad = gamepad1,
         )
 
         subsystems = listOf(
@@ -57,17 +57,17 @@ open class ManualOpMode : OpMode() {
     }
 
     override fun loop() {
-        val intakeForward = robotHardware.gamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5
-        val intakeReverse = robotHardware.gamepad.isDown(GamepadKeys.Button.DPAD_DOWN)
-        val rightTriggerNow = robotHardware.gamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5
+        val intakeForward = gamepad1.left_trigger_pressed
+        val intakeReverse = gamepad1.dpad_down
+        val rightTriggerNow = gamepad1.right_trigger_pressed
         val shoot = rightTriggerNow && !rightTriggerPrev
         val shootRelease = !rightTriggerNow && rightTriggerPrev
-        val flywheelToggle = robotHardware.gamepad.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)
-        val lockTowardsGoal = robotHardware.gamepad.isDown(GamepadKeys.Button.LEFT_BUMPER)
+        val flywheelToggle = gamepad1.dpadLeftWasPressed()
+        val lockTowardsGoal = gamepad1.left_bumper
 
         val touchedJoystick =
-            robotHardware.gamepad.leftX >= 0.1 || robotHardware.gamepad.leftX <= -0.1 || robotHardware.gamepad.leftY >= 0.1 || robotHardware.gamepad.leftY <= -0.1
-        val macroMoveToShoot = robotHardware.gamepad.wasJustPressed(GamepadKeys.Button.X)
+            gamepad1.left_stick_x != 0.0f || gamepad1.left_stick_y != 0.0f || gamepad1.right_stick_x != 0.0f
+        val macroMoveToShoot = gamepad1.xWasPressed()
 
         intake.setState(
             when {
@@ -102,6 +102,7 @@ open class ManualOpMode : OpMode() {
             subsystem.periodic(botContext)
         }
 
+
         if (inventory.artifacts >= 3 && !rumbledForThreeArtifacts) {
             gamepad1.rumble(1000)
             rumbledForThreeArtifacts = true
@@ -110,8 +111,6 @@ open class ManualOpMode : OpMode() {
         if (inventory.artifacts < 3) {
             rumbledForThreeArtifacts = false
         }
-
-        robotHardware.gamepad.readButtons()
 
         rightTriggerPrev = rightTriggerNow
     }
