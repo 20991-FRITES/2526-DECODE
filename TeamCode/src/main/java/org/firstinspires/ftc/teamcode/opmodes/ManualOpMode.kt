@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Buffer
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel
 import org.firstinspires.ftc.teamcode.subsystems.Intake
+import org.firstinspires.ftc.teamcode.subsystems.Inventory
 import org.firstinspires.ftc.teamcode.subsystems.Localization
 
 open class ManualOpMode : OpMode() {
@@ -23,11 +24,13 @@ open class ManualOpMode : OpMode() {
     lateinit var flywheel: Flywheel
     lateinit var buffer: Buffer
     lateinit var team: Team
+    lateinit var inventory: Inventory
 
     lateinit var botContext: BotContext
 
     lateinit var subsystems: List<Subsystem>
     private var rightTriggerPrev = false
+    private var rumbledForThreeArtifacts = false
 
     override fun init() {
         robotHardware.init(hardwareMap, gamepad1)
@@ -37,6 +40,7 @@ open class ManualOpMode : OpMode() {
         intake = Intake(robotHardware)
         flywheel = Flywheel(robotHardware)
         buffer = Buffer(robotHardware)
+        inventory = Inventory(robotHardware)
 
         botContext = BotContext(
             team = team,
@@ -47,7 +51,8 @@ open class ManualOpMode : OpMode() {
             drivetrain,
             intake,
             flywheel,
-            buffer
+            buffer,
+            inventory
         )
     }
 
@@ -95,6 +100,15 @@ open class ManualOpMode : OpMode() {
 
         for (subsystem in subsystems) {
             subsystem.periodic(botContext)
+        }
+
+        if (inventory.artifacts >= 3 && !rumbledForThreeArtifacts) {
+            gamepad1.rumble(1000)
+            rumbledForThreeArtifacts = true
+        }
+
+        if (inventory.artifacts < 3) {
+            rumbledForThreeArtifacts = false
         }
 
         robotHardware.gamepad.readButtons()
